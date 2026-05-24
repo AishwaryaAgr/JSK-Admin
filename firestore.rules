@@ -1,0 +1,23 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    match /members/{memberId} {
+      // Anyone can read member data
+      allow read: if true;
+      
+      // Enforce that the 'name' field is compulsory (must exist, must be a string, and cannot be empty)
+      allow create, update: if request.resource.data.keys().hasAll(['name']) 
+                            && request.resource.data.name is string 
+                            && request.resource.data.name.size() > 0;
+      
+      allow delete: if true;
+    }
+
+    // Default rule for other collections (if any)
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
