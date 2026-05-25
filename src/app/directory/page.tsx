@@ -44,11 +44,32 @@ export default function Directory() {
     [members]
   );
 
-  const filteredMembers = members.filter(member => 
-    member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.firmName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.businessCategory?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter and sort members: prioritize introducer matches when searching by introducer
+  let filteredMembers: Member[] = [];
+  const lowerSearchQuery = searchQuery.toLowerCase();
+  
+  if (searchQuery.trim() !== '') {
+    // Separate members that match introducer criteria from others
+    const introducerMatches = members.filter(member => 
+      member.introducerId?.toLowerCase().includes(lowerSearchQuery) ||
+      (getIntroducerDisplayName(member.introducerId, introducerNameLookup) || '').toLowerCase().includes(lowerSearchQuery)
+    );
+    
+    const otherMatches = members.filter(member => 
+      !introducerMatches.includes(member) && // Not already in introducer matches
+      (
+        member.name.toLowerCase().includes(lowerSearchQuery) ||
+        member.firmName?.toLowerCase().includes(lowerSearchQuery) ||
+        member.businessCategory?.toLowerCase().includes(lowerSearchQuery)
+      )
+    );
+    
+    // Combine: introducer matches first, then other matches
+    filteredMembers = [...introducerMatches, ...otherMatches];
+  } else {
+    // No search query, show all members
+    filteredMembers = members;
+  }
 
   return (
     <div className={styles.dashboard}>
@@ -108,20 +129,20 @@ export default function Directory() {
           borderRadius: 'var(--radius-md)'
         }}>
           <Search size={20} color="var(--text-secondary)" />
-          <input 
-            type="text" 
-            placeholder="Search members by name, firm, or category..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ 
-              border: 'none', 
-              background: 'none', 
-              outline: 'none', 
-              width: '100%',
-              color: 'var(--text-primary)',
-              fontSize: '1rem'
-            }} 
-          />
+            <input 
+              type="text" 
+              placeholder="Search members by name, firm, category, or introducer..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ 
+                border: 'none', 
+                background: 'none', 
+                outline: 'none', 
+                width: '100%',
+                color: 'var(--text-primary)',
+                fontSize: '1rem'
+              }} 
+            />
         </div>
       </div>
 

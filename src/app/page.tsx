@@ -5,33 +5,39 @@ import { Users, Briefcase, AlertCircle, Building2, Phone } from 'lucide-react';
 import styles from './page.module.css';
 import { db, Member } from '@/lib/firebase';
 import { getMemberStatus } from '@/lib/memberStatus';
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit, count } from 'firebase/firestore';
 
 export default function Home() {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalMembers, setTotalMembers] = useState<number>(0);
 
   useEffect(() => {
-    async function fetchRecentMembers() {
+    async function fetchData() {
       try {
-        const q = query(collection(db, 'members'), orderBy('addedDate', 'desc'), limit(6));
-        const querySnapshot = await getDocs(q);
+        // Fetch recent 6 members for display
+        const recentQ = query(collection(db, 'members'), orderBy('addedDate', 'desc'), limit(6));
+        const recentQuerySnapshot = await getDocs(recentQ);
         const fetchedMembers: Member[] = [];
-        querySnapshot.forEach((doc) => {
+        recentQuerySnapshot.forEach((doc) => {
           fetchedMembers.push({ id: doc.id, ...doc.data() } as Member);
         });
         setMembers(fetchedMembers);
+
+        // Fetch total count
+        const countQuery = query(collection(db, 'members'));
+        const countSnapshot = await getDocs(countQuery);
+        setTotalMembers(countSnapshot.size);
       } catch (error) {
         console.error("Error fetching members: ", error);
       } finally {
         setLoading(false);
       }
     }
-    fetchRecentMembers();
+    fetchData();
   }, []);
 
   // Compute stats client-side for now based on fetched (ideally this is done via aggregation queries if DB is huge)
-  const totalMembers = members.length; // Note: this only counts recent 6. Real app needs count()
   const pendingOverdue = members.filter(m => {
     const status = getMemberStatus(m.nextDue);
     return status === 'Pending' || status === 'Overdue';
@@ -50,8 +56,8 @@ export default function Home() {
             <Users size={24} />
           </div>
           <div className={styles.statInfo}>
-            <div className={styles.statValue}>{loading ? '-' : `${totalMembers}+`}</div>
-            <div className={styles.statLabel}>Recent Additions</div>
+            <div className={styles.statValue}>{loading ? '-' : totalMembers}</div>
+            <div className={styles.statLabel}>Total Members</div>
           </div>
         </div>
 
@@ -94,36 +100,36 @@ export default function Home() {
             {members.map(member => {
               const status = getMemberStatus(member.nextDue);
               return (
-              <div key={member.id} className={styles.memberCard}>
-                <div className={styles.memberHeader}>
-                  <div className={styles.avatar}>
-                    {member.pictureUrl ? (
-                      <img src={member.pictureUrl} alt={member.name} />
-                    ) : (
-                      member.name.charAt(0).toUpperCase()
-                    )}
+                <div key={member.id} className={styles.memberCard}>
+                  <div className={styles.memberHeader}>
+                    <div className={styles.avatar}>
+                      {member.pictureUrl ? (
+                        <img src={member.pictureUrl} alt={member.name} />
+                      ) : (
+                        member.name.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <div className={styles.memberInfo}>
+                      <h3>{member.name}</h3>
+                      <span className={`${styles.statusBadge} ${styles[`status${status}`]}`}>
+                        {status}
+                      </span>
+                    </div>
                   </div>
-                  <div className={styles.memberInfo}>
-                    <h3>{member.name}</h3>
-                    <span className={`${styles.statusBadge} ${styles[`status${status}`]}`}>
-                      {status}
-                    </span>
+                  
+                  <div className={styles.memberDetails}>
+                    <div className={styles.detailRow}>
+                      <Building2 size={16} />
+                      <span>{member.firmName || 'No Firm'} ({member.businessCategory || 'Uncategorized'})</span>
+                    </div>
+                    <div className={styles.detailRow}>
+                      <Phone size={16} />
+                      <span>{member.contact}</span>
+                    </div>
                   </div>
                 </div>
-                
-                <div className={styles.memberDetails}>
-                  <div className={styles.detailRow}>
-                    <Building2 size={16} />
-                    <span>{member.firmName || 'No Firm'} ({member.businessCategory || 'Uncategorized'})</span>
-                  </div>
-                  <div className={styles.detailRow}>
-                    <Phone size={16} />
-                    <span>{member.contact}</span>
-                  </div>
-                </div>
-              </div>
-            );
-            })}
+              );
+              })}
           </div>
         )}
       </section>

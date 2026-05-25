@@ -28,7 +28,7 @@ export type Member = {
   firmLong: number | null;
   businessCategory: string;
   pictureUrl: string | null;
-  jskId: number;
+  jskId: string;
   introducerId: string | null;
 };
 
@@ -36,7 +36,7 @@ export type Payment = {
   id: string;
   memberId: string;
   memberName: string;
-  jskId: number;
+  jskId: string;
   type: 'annual_dues' | 'special_offer';
   amount: number;
   date: string;
