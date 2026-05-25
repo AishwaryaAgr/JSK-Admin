@@ -12,7 +12,6 @@ const navItems = [
   { name: 'Add Member', href: '/add', icon: PlusSquare },
   { name: 'Payments', href: '/payments', icon: CreditCard },
   { name: 'Map View', href: '/map', icon: MapIcon },
-  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export default function Sidebar() {
