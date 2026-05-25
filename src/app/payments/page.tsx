@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { db, Member, Payment } from '@/lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, doc, query, orderBy, limit, startAfter } from 'firebase/firestore';
 import { Search, Plus, Calendar, DollarSign } from 'lucide-react';
+import BulkUploadMembers from '@/components/BulkUploadMembers';
+import { PAYMENT_TYPE_OPTIONS, formatPaymentType } from '@/lib/paymentTypes';
 import styles from './page.module.css';
 
 const ITEMS_PER_PAGE = 10;
@@ -40,6 +42,14 @@ export default function Payments() {
     } catch (error) {
       console.error('Error fetching members:', error);
     }
+  };
+
+  const refreshAfterBulkUpload = async () => {
+    await fetchMembers();
+    setPayments([]);
+    setLastVisible(null);
+    setHasMore(true);
+    await fetchPayments();
   };
 
   const fetchPayments = async (reset = false) => {
@@ -162,6 +172,8 @@ export default function Payments() {
         <p className={styles.subtitle}>Record and manage member payments.</p>
       </header>
 
+      <BulkUploadMembers onComplete={refreshAfterBulkUpload} />
+
       <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
         <div style={{ 
           flex: 1, 
@@ -233,8 +245,11 @@ export default function Payments() {
                 onChange={(e) => setPaymentType(e.target.value as 'annual_dues' | 'special_offer')}
                 className={styles.select}
               >
-                <option value="annual_dues">Annual Dues</option>
-                <option value="special_offer">Special Offer</option>
+                {PAYMENT_TYPE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -374,7 +389,7 @@ export default function Payments() {
                         backgroundColor: payment.type === 'annual_dues' ? 'var(--status-active-bg)' : 'var(--bg-primary)',
                         color: payment.type === 'annual_dues' ? 'var(--status-active-text)' : 'var(--text-secondary)'
                       }}>
-                        {payment.type === 'annual_dues' ? 'Annual Dues' : 'Special Offer'}
+                        {formatPaymentType(payment.type)}
                       </span>
                     </td>
                     <td style={{ padding: '1rem' }}>

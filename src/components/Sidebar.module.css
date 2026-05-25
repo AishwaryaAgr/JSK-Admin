@@ -74,3 +74,25 @@
   font-size: 0.875rem;
   color: var(--text-secondary);
 }
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logoutBtn:hover {
+  color: var(--status-overdue-text);
+  border-color: var(--status-overdue-text);
+}

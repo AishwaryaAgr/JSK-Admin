@@ -184,6 +184,30 @@
   overflow: hidden;
 }
 
+.editMemberBtn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.editMemberBtn:hover {
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
 .memberCard:hover {
   border-color: var(--accent-color);
   transform: translateY(-2px);

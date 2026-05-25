@@ -189,3 +189,87 @@
   background-color: var(--accent-color);
   color: #fff;
 }
+
+.editModal {
+  max-width: 720px;
+  width: 95%;
+  text-align: left;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.editModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.editModalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.iconBtn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+}
+
+.secondaryBtn {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.secondaryBtn:hover:not(:disabled) {
+  border-color: var(--accent-color);
+}
+
+.linkBtn {
+  margin-top: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.linkBtn:hover {
+  text-decoration: underline;
+}
+
+.currentPhoto {
+  margin-bottom: 0.75rem;
+}
+
+.currentPhoto img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+}
+
+.input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

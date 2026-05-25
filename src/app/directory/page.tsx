@@ -1,19 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Building2, Phone, Search, List, Grid } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Building2, Phone, Search, List, Grid, UserRound, Pencil } from 'lucide-react';
 import styles from '../page.module.css';
 import { db, Member } from '@/lib/firebase';
+import { getMemberStatus } from '@/lib/memberStatus';
+import { buildIntroducerNameLookup, getIntroducerDisplayName } from '@/lib/introducer';
+import EditMemberModal from '@/components/EditMemberModal';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-
-const getStatus = (nextDue: string): 'Active' | 'Pending' | 'Overdue' | 'Inactive' => {
-  if (!nextDue) return 'Pending';
-  const dueDate = new Date(nextDue);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  if (dueDate < today) return 'Overdue';
-  return 'Active';
-};
 
 export default function Directory() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -22,25 +16,33 @@ export default function Directory() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'name' | 'addedDate' | 'nextDue'>('addedDate');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+
+  const fetchMembers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const q = query(collection(db, 'members'), orderBy(sortBy, sortOrder));
+      const querySnapshot = await getDocs(q);
+      const fetchedMembers: Member[] = [];
+      querySnapshot.forEach((doc) => {
+        fetchedMembers.push({ id: doc.id, ...doc.data() } as Member);
+      });
+      setMembers(fetchedMembers);
+    } catch (error) {
+      console.error('Error fetching members: ', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [sortBy, sortOrder]);
 
   useEffect(() => {
-    async function fetchMembers() {
-      try {
-        const q = query(collection(db, 'members'), orderBy(sortBy, sortOrder));
-        const querySnapshot = await getDocs(q);
-        const fetchedMembers: Member[] = [];
-        querySnapshot.forEach((doc) => {
-          fetchedMembers.push({ id: doc.id, ...doc.data() } as Member);
-        });
-        setMembers(fetchedMembers);
-      } catch (error) {
-        console.error("Error fetching members: ", error);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchMembers();
-  }, [sortBy, sortOrder]);
+  }, [fetchMembers]);
+
+  const introducerNameLookup = useMemo(
+    () => buildIntroducerNameLookup(members.map((m) => ({ name: m.name, jskId: m.jskId }))),
+    [members]
+  );
 
   const filteredMembers = members.filter(member => 
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -135,6 +137,14 @@ export default function Directory() {
         <div className={`${styles.membersContainer} ${viewMode === 'grid' ? styles.membersContainerGridView : styles.membersContainerListView}`}>
           {filteredMembers.map(member => (
             <div key={member.id} className={`${styles.memberCard} ${viewMode === 'list' ? styles.memberListItem : ''}`}>
+              <button
+                type="button"
+                className={styles.editMemberBtn}
+                onClick={() => setEditingMember(member)}
+                aria-label={`Edit ${member.name}`}
+              >
+                <Pencil size={16} />
+              </button>
               <div className={viewMode === 'list' ? styles.memberListContent : styles.memberHeader}>
                 <div className={styles.avatar}>
                   {member.pictureUrl ? (
@@ -145,8 +155,8 @@ export default function Directory() {
                 </div>
 <div className={styles.memberInfo}>
                    <h3>{member.name}</h3>
-                   <span className={`${styles.statusBadge} ${styles[`status${getStatus(member.nextDue)}`]}`}>
-                     {getStatus(member.nextDue)}
+                   <span className={`${styles.statusBadge} ${styles[`status${getMemberStatus(member.nextDue)}`]}`}>
+                     {getMemberStatus(member.nextDue)}
                    </span>
                  </div>
               </div>
@@ -160,6 +170,10 @@ export default function Directory() {
                   <div className={styles.detailRow}>
                     <Phone size={16} />
                     <span>{member.contact}</span>
+                  </div>
+                  <div className={styles.detailRow}>
+                    <UserRound size={16} />
+                    <span>Introducer: {getIntroducerDisplayName(member.introducerId, introducerNameLookup)}</span>
                   </div>
                   <div className={styles.detailRow}>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>JSK ID: JSK-{member.jskId}</span>
@@ -176,6 +190,10 @@ export default function Directory() {
                     <span>{member.contact}</span>
                   </div>
                   <div className={styles.detailRow}>
+                    <UserRound size={16} />
+                    <span>Introducer: {getIntroducerDisplayName(member.introducerId, introducerNameLookup)}</span>
+                  </div>
+                  <div className={styles.detailRow}>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>JSK ID: JSK-{member.jskId}</span>
                   </div>
                 </div>
@@ -183,6 +201,15 @@ export default function Directory() {
             </div>
           ))}
         </div>
+      )}
+
+      {editingMember && (
+        <EditMemberModal
+          member={editingMember}
+          allMembers={members}
+          onClose={() => setEditingMember(null)}
+          onSaved={fetchMembers}
+        />
       )}
     </div>
   );

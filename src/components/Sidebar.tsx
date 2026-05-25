@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, LayoutDashboard, Settings, Map as MapIcon, PlusSquare, CreditCard } from 'lucide-react';
+import { Users, LayoutDashboard, Settings, Map as MapIcon, PlusSquare, CreditCard, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import styles from './Sidebar.module.css';
 
 const navItems = [
@@ -16,6 +17,13 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/login');
+    router.refresh();
+  };
 
   return (
     <aside className={styles.sidebar}>
@@ -23,7 +31,7 @@ export default function Sidebar() {
         <div className={styles.logoIcon}>
           <Users size={28} />
         </div>
-        <span className="text-gradient">ClubHub</span>
+        <span className="text-gradient">JSK Admin</span>
       </div>
 
       <nav className={styles.nav}>
@@ -44,7 +52,11 @@ export default function Sidebar() {
       </nav>
 
       <div className={styles.footer}>
-        <p>&copy; {new Date().getFullYear()} ClubHub</p>
+        <button type="button" className={styles.logoutBtn} onClick={handleLogout}>
+          <LogOut size={18} />
+          Sign out
+        </button>
+        <p>&copy; {new Date().getFullYear()} JSK Admin</p>
       </div>
     </aside>
   );

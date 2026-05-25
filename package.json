@@ -6,16 +6,21 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "firebase:deploy:rules": "firebase deploy --only firestore:rules",
+    "firebase:deploy:apphosting": "firebase deploy --only apphosting:jsk-admin"
   },
   "dependencies": {
+    "exceljs": "^4.4.0",
     "firebase": "^12.13.0",
+    "jose": "^6.2.3",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.16.0",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "react-leaflet": "^5.0.0"
+    "react-leaflet": "^5.0.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.21",
@@ -24,6 +29,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "firebase-tools": "^15.18.0",
     "typescript": "^5"
   }
 }

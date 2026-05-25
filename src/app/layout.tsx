@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
-import Sidebar from "@/components/Sidebar";
-import layoutStyles from "./layout.module.css";
+import AppShell from "@/components/AppShell";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -10,8 +9,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Club Member Directory",
-  description: "A premium directory to manage and discover club members seamlessly.",
+  title: "JSK Admin",
+  description: "JSK Admin — manage members, payments, and directory.",
 };
 
 export default function RootLayout({
@@ -22,12 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${outfit.variable}`}>
       <body>
-        <div className={layoutStyles.layout}>
-          <Sidebar />
-          <main className={layoutStyles.mainContent}>
-            {children}
-          </main>
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

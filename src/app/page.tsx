@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Users, Briefcase, AlertCircle, Building2, Phone } from 'lucide-react';
 import styles from './page.module.css';
 import { db, Member } from '@/lib/firebase';
+import { getMemberStatus } from '@/lib/memberStatus';
 import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 
 export default function Home() {
@@ -31,7 +32,10 @@ export default function Home() {
 
   // Compute stats client-side for now based on fetched (ideally this is done via aggregation queries if DB is huge)
   const totalMembers = members.length; // Note: this only counts recent 6. Real app needs count()
-  const pendingOverdue = members.filter(m => m.status === 'Pending' || m.status === 'Overdue').length;
+  const pendingOverdue = members.filter(m => {
+    const status = getMemberStatus(m.nextDue);
+    return status === 'Pending' || status === 'Overdue';
+  }).length;
 
   return (
     <div className={styles.dashboard}>
@@ -87,7 +91,9 @@ export default function Home() {
           </div>
         ) : (
           <div className={styles.membersGrid}>
-            {members.map(member => (
+            {members.map(member => {
+              const status = getMemberStatus(member.nextDue);
+              return (
               <div key={member.id} className={styles.memberCard}>
                 <div className={styles.memberHeader}>
                   <div className={styles.avatar}>
@@ -99,8 +105,8 @@ export default function Home() {
                   </div>
                   <div className={styles.memberInfo}>
                     <h3>{member.name}</h3>
-                    <span className={`${styles.statusBadge} ${styles[`status${member.status}`]}`}>
-                      {member.status}
+                    <span className={`${styles.statusBadge} ${styles[`status${status}`]}`}>
+                      {status}
                     </span>
                   </div>
                 </div>
@@ -116,7 +122,8 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            ))}
+            );
+            })}
           </div>
         )}
       </section>
